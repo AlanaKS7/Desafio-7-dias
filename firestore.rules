@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required) - The user's unique ID
+    //   - email: string (required) - The user's email address
+    //   - hasStarted: boolean (optional) - Whether the user has started the challenge
+    //   - currentDay: number (optional) - The current day of the challenge (1-7)
+    //   - completedDays: list (optional) - Array of completed days
+    //   - waterHistory: map (optional) - Map of date strings to number of glasses
+    //   - notes: map (optional) - Map of day numbers to note strings
+    //   - exercises: map (optional) - Map of day numbers to boolean indicating if exercise was done
+    //   - remedies: map (optional) - Map of day numbers to a map of remedy names to boolean
+    //   - measurements: list (optional) - Array of body measurements
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidUser() {
+      return hasRequiredFields(['uid', 'email']) &&
+             request.resource.data.uid is string &&
+             request.resource.data.uid.size() > 0 &&
+             request.resource.data.uid.size() < 128 &&
+             request.resource.data.email is string &&
+             request.resource.data.email.size() > 0 &&
+             request.resource.data.email.size() < 256;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser() && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUser() && uidNotModified();
+      allow delete: if isOwner(userId);
+    }
+  }
+}

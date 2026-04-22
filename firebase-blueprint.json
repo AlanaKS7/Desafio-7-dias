@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User's progress and data in the 7-day challenge.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address."
+        },
+        "hasStarted": {
+          "type": "boolean",
+          "description": "Whether the user has started the challenge."
+        },
+        "currentDay": {
+          "type": "number",
+          "description": "The current day of the challenge (1-7)."
+        },
+        "completedDays": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Array of completed days."
+        },
+        "waterHistory": {
+          "type": "object",
+          "description": "Map of date strings (e.g., '01/04/2026') to number of glasses."
+        },
+        "notes": {
+          "type": "object",
+          "description": "Map of day numbers to note strings."
+        },
+        "exercises": {
+          "type": "object",
+          "description": "Map of day numbers to boolean indicating if exercise was done."
+        },
+        "remedies": {
+          "type": "object",
+          "description": "Map of day numbers to a map of remedy names to boolean."
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "date": { "type": "string" },
+              "weight": { "type": "string" },
+              "waist": { "type": "string" },
+              "hips": { "type": "string" },
+              "chest": { "type": "string" },
+              "arms": { "type": "string" },
+              "thighs": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          },
+          "description": "Array of body measurements."
+        }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores user progress and data."
+    }
+  }
+}
